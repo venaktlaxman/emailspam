@@ -1,0 +1,52 @@
+# spamemail
+//The process of finding out the emails that are spam or ham using Machine Learning algorithms.
+import numpy as np
+import pandas as pd
+import os
+for dirname, _, filenames in os.walk('/kaggle/input/spam.csv'):
+    for filename in filenames:
+        print(os.path.join(dirname, filename))
+data=pd.read_csv('spam.csv')
+print(data.shape)
+data.head()
+import re
+def preprocess_text(text):
+    text = text.lower()
+    text = re.sub(r'[^a-zA-Z0-9\s]', '', text)
+    return text
+X = data['Message']
+Y = data['Category']
+print(X)
+print(Y)
+for i in range(5):
+    print(X.iloc[i])
+X = X.apply(preprocess_text)
+for i in range(5):
+    print(X.iloc[i])
+from sklearn.model_selection import train_test_split
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=5)
+print(X_train)
+from sklearn.feature_extraction.text import CountVectorizer
+vect = CountVectorizer()
+X_train = vect.fit_transform(X_train)
+X_test  = vect.transform(X_test)
+print("X_train matrix after applying CountVectorizer:")
+print(X_train)
+print("\nX_test matrix after applying CountVectorizer:")
+print(X_test)
+from sklearn.naive_bayes import MultinomialNB
+multNB = MultinomialNB()
+multNB.fit(X_train,Y_train)
+Y_pred = multNB.predict(X_test)
+print("Prediction matrix(Y_pred):")
+print(Y_pred)
+from sklearn.metrics import accuracy_score
+print(f'The accuracy score of this model is {accuracy_score(Y_test,Y_pred)}')
+sample_email = "euuwiw find a words ....,niwoe!"
+sample_email = preprocess_text(sample_email)
+sample_email_vectorized = vect.transform([sample_email])
+prediction = multNB.predict(sample_email_vectorized)
+if prediction[0] == 'spam':
+    print("Email is spam.")
+else:
+    print("Email is ham.")
